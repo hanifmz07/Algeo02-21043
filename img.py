@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 import matplotlib.image as image
-import mediapipe as mp
+# import mediapipe as mp
 import matplotlib.pyplot as plt
 import os
 
@@ -14,31 +14,31 @@ def grayscale(filename):
     gray = cv2.cvtColor(filename, cv2.COLOR_BGR2GRAY)
     return gray
 
-def changebg(filename):
-    # Initialize segmentation
-    change_background_mp = mp.solutions.selfie_segmentation
-    change_bg_segment = change_background_mp.SelfieSegmentation()
+# def changebg(filename):
+#     # Initialize segmentation
+#     change_background_mp = mp.solutions.selfie_segmentation
+#     change_bg_segment = change_background_mp.SelfieSegmentation()
 
-    # read image file
-    sample_img = cv2.imread(filename)
+#     # read image file
+#     sample_img = cv2.imread(filename)
 
-    # convert the BGR format image to an RGB format
-    RGB_sample_img = cv2.cvtColor(sample_img, cv2.COLOR_BGR2RGB)
+#     # convert the BGR format image to an RGB format
+#     RGB_sample_img = cv2.cvtColor(sample_img, cv2.COLOR_BGR2RGB)
 
-    result = change_bg_segment.process(RGB_sample_img)
+#     result = change_bg_segment.process(RGB_sample_img)
 
-    # binary masking to mask person image
-    binary_mask = result.segmentation_mask > 0.9
+#     # binary masking to mask person image
+#     binary_mask = result.segmentation_mask > 0.9
 
-    # convert to 3-channel
-    binary_mask_3 = np.dstack((binary_mask,binary_mask,binary_mask))
+#     # convert to 3-channel
+#     binary_mask_3 = np.dstack((binary_mask,binary_mask,binary_mask))
 
-    # change background color to white
-    output_image = np.where(binary_mask_3, sample_img, 255)  
-    # ss = np.asmatrix(output_image)  
+#     # change background color to white
+#     output_image = np.where(binary_mask_3, sample_img, 255)  
+#     # ss = np.asmatrix(output_image)  
 
-    # write result to an image file
-    return output_image
+#     # write result to an image file
+#     return output_image
 
 def cropface(file):
     # Read the input image
@@ -76,7 +76,7 @@ def preprocess(dir,address,name):
             print(os.path.join(root, filename))
             addr = os.path.join(root, filename)
             # change background to white
-            pic = changebg(addr)
+            pic = (addr)
             # detect and crop face
             face = cropface(pic)
             # Resize image to 256 x 256
@@ -92,7 +92,7 @@ def preprocess(dir,address,name):
             # print(S)
             i += 1
     # print(S)
-    print(S[1])
+    # print(S[1])
     return S
 
 
