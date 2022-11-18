@@ -1,4 +1,4 @@
-import numpy as np
+from functions import *
 
 def eig_val_and_vec(M):
     for i in range(30):

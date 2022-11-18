@@ -1,17 +1,43 @@
-import numpy as np
-import math as mt
-import time
-
-start_time = time.time()
+from img import *
 
 ROUND = 2
+
 # Fungsi Mean
 def mean(S):
+    M = len(S)
+    Mean = (np.sum(S, axis=0))
+    Mean = np.floor_divide(Mean, M) # round
+    return Mean
+
+def meanFlatten(S):
+    Mean = np.sum(S, axis=0)
+    Mean = np.floor_divide(Mean, S.shape[0])
+    return Mean  
+
+# Prosedur Selisih
+def difference(S, mean):
+    a = np.subtract(S, mean)
+    return np.abs(a)
+
+def differenceFlatten(S, M):
+    return abs(S - M)
+
+# Fungsi Matriks Kovarian
+def kovarian(S, dif):
+    C = np.concatenate(dif, axis=1)
+    L = np.matmul(C, np.transpose(C))
+    return L
+
+def covarianceFlatten(S):
+    # return (S @ S.T)
+    return np.matmul(S, S.T)
+
+# Not Numpy 
+def meanNotNumpy(S):
     M = len(S)
     nrows = len(S[0])
     ncols = len((S[0])[0])
     Mean = [[0 for _ in range(ncols)] for _ in range(nrows)]
-    # np.sum()
     for m in range(0, M):
         for i in range(nrows):
             for j in range(ncols):
@@ -20,12 +46,9 @@ def mean(S):
         for j in range(ncols):
             # Mean[i][j]=round((Mean[i][j]/M),ROUND)
             Mean[i][j] = mt.floor((Mean[i][j] / M))
-            #   ??? di floor kah ?
     return Mean
 
-
-# Prosedur Selisih
-def difference(S, mean):
+def differenceNotNumpy(S, mean):
     M = len(S)
     nrows = len(S[0])
     ncols = len((S[0])[0])
@@ -34,14 +57,12 @@ def difference(S, mean):
             for j in range(ncols):
                 (S[m])[i][j] = round(abs((S[m])[i][j] - mean[i][j]), ROUND)
 
-
-# Fungsi Matriks Kovarian
-def kovarian(S):
+def kovarianNotNumpy(S):
     M = len(S)
     nrows = len(S[0])
     ncols = len((S[0])[0])
     nc = ncols * M
-    difference(S, mean(S))
+    differenceNotNumpy(S, meanNotNumpy(S))
     # np.concatenate(S[0 for i in range M],axix = 0)
     C = [[0 for _ in range(nc)] for _ in range(nrows)]
     for m in range(0, M):
@@ -51,31 +72,3 @@ def kovarian(S):
     # print(C)
     L = np.matmul(C, np.transpose(C))
     return L
-
-
-# driver
-# A1 = [[1, 2, 3], [3, 4, 5]]
-# A2 = [[5, 6, 7], [5, 2, 4]]
-# A3 = [[1, 2, 5], [4, 1, 3]]
-# A = [A1, A2, A3]
-# t1 = [[2, 0, 1], [1, 2, 0], [0, 2, 4]]
-# t2 = [[1, 1, 1], [0, 1, 0], [1, 2, 2]]
-# tr = [t1, t2]
-# # print (A)
-# print(tr)
-
-# # print("")
-# # me = mean(A)
-# # print (me)
-# # print("")
-# # difference(A,me)
-# # print (A)
-# # C = [[0 for _ in range (nc)] for _ in range (nr)]
-# L = kovarian(tr)
-# print(L)
-# # f = [[1,2,3],[4,5,6]]
-# # print(np.matmul(f,np.transpose(f)))
-# # print (len(A1), len(A1[0]))
-
-
-# print("--- %s seconds ---" % (time.time() - start_time))
