@@ -90,3 +90,4 @@ def preprocess(dir):
             # append to array of image matrixs
             S = np.append(S, [gray_image.flatten()], axis=0)
     return S
+
