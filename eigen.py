@@ -1,19 +1,46 @@
 from functions import *
+from img import *
 
+# Face average
+def face_avg(X):
+    return np.sum(X, axis=0) / X.shape[0]
+
+# Train_face -  average_face
+def normalized_face(X, avg):
+    return X - avg
+
+# Covariance matrix
+def covariance_mat(X):
+    return X @ X.T
+
+# Eigenvalue and eigenvector using QR decomposition
 def eig_val_and_vec(M):
-    for i in range(30):
+    first = True
+    # i = 0
+    while (True):
         Q, R = qr_householder(M)
+        # Q, R = np.linalg.qr(M)
+        eigval_prev = M.diagonal().copy()
         M = R @ Q
-        if i == 0:
+        if first:
             eigvec = Q.copy()
+            first = False
+            continue
         else:
             eigvec = eigvec @ Q
-    
-    return M.diagonal(), eigvec
+            # If the error reached a very small value, the process will be stopped
+            if np.allclose(eigval_prev, M.diagonal(), rtol=1e-6, atol=1e-8):
+                break
+        # i += 1
+        # print(f"{(i+1)/50}%")
+    # print(i)
+    return M.diagonal(), eigvec  
 
+# Norm vector
 def norm_vector(v):
     return np.sqrt(np.sum(v**2))
 
+# QR decomposition with householder matrix
 def qr_householder(M):
     init_size, y = M.shape
     R = M.copy()
@@ -29,3 +56,66 @@ def qr_householder(M):
         Q = Q @ H
         R = H @ R
     return Q, R
+
+# Scale matrix to 0-255 for displaying
+def minMaxScalerImg(X):
+    X = (X - np.min(X)) / (np.max(X) - np.min(X)) * 255
+    return X
+
+
+# Normalize eigenvectors
+def normalizeEigVec(eig_vect):
+    for i in range(int(eig_vect.T.shape[0])):
+        eig_vect.T[i] = eig_vect.T[i] / norm_vector(eig_vect.T[i])
+    return eig_vect
+
+# Get eigenface from eigenvectors
+# Ratio: ratio between len(eigenface) and len(eigenvectors), value from 0-1
+def eigenFace(X, ratio):
+    eigen_face = np.empty((0, X.T.shape[1]), 'float64')
+    for i in range(int(X.T.shape[0] * ratio)):
+        eigen_face = np.append(eigen_face, [X.T[i]], axis=0)
+    return eigen_face
+
+# Scaling eigen face for display
+def scaledEigenFace(X):
+    E_scaled = np.empty((0, X.shape[1]), 'float64')
+    for i in range(int(X.shape[0])):
+        E_scaled = np.append(E_scaled, [minMaxScalerImg(X.T[i])], axis=0)
+
+# Face identification
+def identification(testFace, M, normal, Eigenface):
+    # Test weights calculation
+    difTF = testFace - M
+    eigenFaceTest = Eigenface @ difTF
+
+    # Train weights calculation
+    Y = Eigenface @ normal.T
+    
+    # Storing each euclidean distance to an array
+    n = len(Eigenface)
+    ArrResult = np.arange(0, n, dtype=float) 
+    for i in range (n):
+        # Euclidean distance between test weights and train weights
+        ArrResult[i] = np.linalg.norm(Y.T[i] - eigenFaceTest)
+    
+    # Return the index of the minimum distance
+    return np.argmin(ArrResult)
+
+# Store eigenfaces in a numpy binary file
+def storeEigenFace(eigen_face):
+    return np.save('eigenface', eigen_face)
+
+# Testing
+# Ntar klo misal yg dibawah gamau dipake, di comment aja
+test_img = preprocess('test_img')
+images = preprocess('sample_img')
+average_face = face_avg(images)
+normal = normalized_face(images, average_face)
+covariance = covariance_mat(normal)
+eig_val, eig_vec = eig_val_and_vec(covariance)
+eig_vec_img = normal.T @ eig_vec
+for i in range(test_img.shape[0]):
+    idx = identification(test_img[i], average_face, normal, eig_vec_img.T)
+    cv.imwrite(f'testing/pred_{i}_pred.jpg', images[idx].reshape(256,256))
+    cv.imwrite(f'testing/pred_{i}.jpg', test_img[i].reshape(256,256))
