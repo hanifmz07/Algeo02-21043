@@ -1,17 +1,4 @@
 from functions import *
-from img import *
-
-# Face average
-def face_avg(X):
-    return np.sum(X, axis=0) / X.shape[0]
-
-# Train_face -  average_face
-def normalized_face(X, avg):
-    return X - avg
-
-# Covariance matrix
-def covariance_mat(X):
-    return X @ X.T
 
 # Eigenvalue and eigenvector using QR decomposition
 def eig_val_and_vec(M):
@@ -106,16 +93,3 @@ def identification(testFace, M, normal, Eigenface):
 def storeEigenFace(eigen_face):
     return np.save('eigenface', eigen_face)
 
-# Testing
-# Ntar klo misal yg dibawah gamau dipake, di comment aja
-test_img = preprocess('test_img')
-images = preprocess('sample_img')
-average_face = face_avg(images)
-normal = normalized_face(images, average_face)
-covariance = covariance_mat(normal)
-eig_val, eig_vec = eig_val_and_vec(covariance)
-eig_vec_img = normal.T @ eig_vec
-for i in range(test_img.shape[0]):
-    idx = identification(test_img[i], average_face, normal, eig_vec_img.T)
-    cv.imwrite(f'testing/pred_{i}_pred.jpg', images[idx].reshape(256,256))
-    cv.imwrite(f'testing/pred_{i}.jpg', test_img[i].reshape(256,256))

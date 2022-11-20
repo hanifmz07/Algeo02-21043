@@ -2,6 +2,23 @@ from img import *
 
 ROUND = 2
 
+
+# Face average
+def face_avg(X):
+    # M = len(X)
+    # Mean = (np.sum(X, axis=0))
+    # Mean = np.floor_divide(Mean, M) # round
+    # return Mean
+    return np.sum(X, axis=0) / X.shape[0]
+
+# Train_face -  average_face
+def normalized_face(X, avg):
+    return (X - avg)
+
+# Covariance matrix
+def covariance_mat(X):
+    return X @ X.T
+
 # Fungsi Mean
 def mean(S):
     M = len(S)
