@@ -43,6 +43,31 @@ def changebg(filename):
     # write result to an image file
     return output_image
 
+def changebgPhoto(filename):
+    # Initialize segmentation
+    change_background_mp = mp.solutions.selfie_segmentation
+    change_bg_segment = change_background_mp.SelfieSegmentation()
+
+    # read image file
+    sample_img = (filename)
+
+    # convert the BGR format image to an RGB format
+    RGB_sample_img = cv.cvtColor(sample_img, cv.COLOR_BGR2RGB)
+
+    result = change_bg_segment.process(RGB_sample_img)
+
+    # binary masking to mask person image
+    binary_mask = result.segmentation_mask > 0.9
+
+    # convert to 3-channel
+    binary_mask_3 = np.dstack((binary_mask,binary_mask,binary_mask))
+
+    # change background color to white
+    output_image = np.where(binary_mask_3, sample_img, 255)  
+
+    # write result to an image file
+    return output_image
+
 def cropface(file):
 
     # Convert into grayscale
@@ -107,7 +132,30 @@ def preprocessFile(dir):
     # detect and crop face
     face = cropface(pic)
         
+    print(face.shape)
     # Resize image to 256 x 256
+    resized = resize(face)
+    # convert to grayscale
+    gray_image = grayscale(resized)
+
+    # append to array of image matrixs
+    S = np.append(S, [gray_image.flatten()])
+    # S = np.reshape(65536,)
+    return S
+
+def preprocessPhoto(dir):
+    S = np.empty((0, 256*256), int)
+    # print(os.path.join(root, filename))
+
+    # change background to white
+    pic = changebgPhoto(dir) # kalau pic belum bisa 
+    # detect and crop face
+    face = cropface(pic)
+    print(face.shape)
+    print('sudah sesuai')
+    # Resize image to 256 x 256
+    
+    # resized = Image.resize(face, (256,256))
     resized = resize(face)
     # convert to grayscale
     gray_image = grayscale(resized)

@@ -25,9 +25,9 @@ CBlock3 = ''
 CBright = '#d6ebff'
 CDark = '#00407b'
 
-# NoPersonImg = "Tubes2-Algeo\\Algeo02-21043\\noPerson.png"
-# print("File location using os.getcwd():", os.getcwd())
-NoPersonImg =  os.path.join(os.getcwd(), "noPerson.png")
+NoPersonImg = "Tubes2-Algeo\\Algeo02-21043\\noPerson.png"
+print("File location using os.getcwd():", os.getcwd())
+NoPersonImg =  os.path.join(os.getcwd(), NoPersonImg)
 ImgTest = NoPersonImg
 ImgResult = NoPersonImg
 
@@ -79,10 +79,27 @@ def SwitchCamera():
         CamButton.configure(text="Camera on", fg='green')
         ChooseFile.configure(state=DISABLED)
         TestI.place_forget()
-        cam.place(x=0.50 * width, y=0.500 * height, anchor=CENTER)
+        cam.place(x=0.50 * width, y=0.500 * height, anchor=CENTER, width=widthPic, height=heightPic, bordermode="ignore")
         cap = cv.VideoCapture(0) 
         showFrame()
         Camera_On=True
+
+def smart_resize(input_image, new_size):
+    width = input_image.width
+    height = input_image.height
+
+# Image is portrait or square
+    if height >= width:
+        crop_box = (0, (height-width)//2, width, (height-width)//2 + width)
+        return input_image.resize(size = (new_size,new_size),
+                                  box = crop_box)
+
+# Image is landscape
+    if width > height:
+        crop_box = ((width-height)//2, 0, (width-height)//2 + height, height)
+        
+        return input_image.resize(size = (new_size,new_size),
+                                  box = crop_box)
 
 def showFrame():
    # Get the latest frame and convert into Image
@@ -101,6 +118,8 @@ def AskFolder():
     folderName = filedialog.askdirectory(initialdir="/", title="Choose a Dataset")
     if (os.path.isdir(folderName)):
         labelFolder.configure(text="Folder : " + os.path.basename(folderName), fg="green")
+    else :
+        labelFolder.configure(text="None", fg='red')
 
 def AskFile():
     global fileName
@@ -120,6 +139,8 @@ def AskFile():
         # imgChange = imgChangeN.resize((350, 350))
         TestI.configure(image=imgChangeN)
         TestI.image = imgChangeN 
+    else :
+        labelFile.configure(text="None", fg='red')
 
 def Execution():
     global fileName, folderName
@@ -184,11 +205,18 @@ def Execution():
             # imgCam = cv.resize(imgCam, (256,256)) 
             print("Dataset      : " + folderName)
             # print(imgCam)
-            fileName = imgCam # ??
+            # fileName = cv.imresize() # ??
+            # fileName = smart_resize(imgCam, 256 )            
+            fileName = imgCam 
+            # fileName = np.reshape(fileName, (256,256, 3))            
             # program
             print(fileName.shape)
             # cv.imwrite("nig.png", fileName)
-            test_img = preprocessFile(fileName)
+            # cam.place(x=0.50 * width, y=0.500 * height, anchor=CENTER, width=widthPic, height=heightPic, bordermode="ignore")
+            
+            # cap = cv.VideoCapture(0) 
+            
+            test_img = preprocessPhoto(fileName)
             print("Preprocess test image DONE")
             dataset_img = preprocess(folderName)
             print("Preprocess dataset DONE")
@@ -204,19 +232,18 @@ def Execution():
             # ResultBox.configure(text='DONE', fg='light green') 
             print("Identification image DONE")
             
-            # listFile = os.listdir(folderName)
-            # fileResult = os.path.join(folderName, listFile[idx])
-            # imgResult = ImageTk.PhotoImage(Image.open(fileResult).resize((widthPic, heightPic)))
-            # TestR.configure(image=imgResult)
-            # TestR.image = imgResult 
-            # resultName = (os.path.splitext(listFile[idx]))[0]
-            # resultNoInt = ''.join([i for i in resultName if not i.isdigit()])
-            # ResultBox.configure(text=resultNoInt, fg='light green' ) # perlu .
-            # print("hasil")
-            # print(idx)
-            # print(resultName)
-
-
+            fileR = listFileDataset[idx]
+            imgResult = ImageTk.PhotoImage(Image.open(fileR).resize((widthPic, heightPic)))
+            TestR.configure(image=imgResult)
+            TestR.image = imgResult 
+            
+            resultName = (os.path.splitext(os.path.basename(fileR)))[0]
+            resultNoInt = ''.join([i for i in resultName if not i.isdigit()])
+            ResultBox.configure(text=resultNoInt, fg='light green' ) # perlu .
+            print("hasil")
+            print(idx)
+            print(resultName)
+            
 
         else :
             print("belum input dataset")
@@ -275,9 +302,9 @@ timeExecution = Label(fid, text="00.00", bg=bgBlock2, fg="lightgreen", font=("ti
 
 # print("--- %s seconds ---" % (time.time() - start_time))
 # imgOpen =
-TestImage = ImageTk.PhotoImage(Image.open(ImgTest).resize((widthPic, heightPic)))
+TestImage = ImageTk.PhotoImage(Image.open(NoPersonImg).resize((widthPic, heightPic)))
 TestI = Label(image=TestImage, borderwidth=0.5, bg='dark blue')
-TestResult = ImageTk.PhotoImage(Image.open(ImgResult).resize((widthPic, heightPic)))
+TestResult = ImageTk.PhotoImage(Image.open(NoPersonImg).resize((widthPic, heightPic)))
 TestR = Label(image=TestResult, borderwidth=0.5, bg='dark blue')
 
 # Button
