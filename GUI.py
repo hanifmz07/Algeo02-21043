@@ -2,9 +2,10 @@
 # import kivy
 from tkinter import *
 from tkinter import filedialog
-from PIL import ImageTk, Image
+import cv2 as cv
 import time
-# from identification import *
+from PIL import ImageTk, Image
+from identification import *
 import os
 
 fileName = 'notOpen'
@@ -24,7 +25,9 @@ CBlock3 = ''
 CBright = '#d6ebff'
 CDark = '#00407b'
 
-NoPersonImg = "Tubes2-Algeo\\Algeo02-21043\\noPerson.png"
+# NoPersonImg = "Tubes2-Algeo\\Algeo02-21043\\noPerson.png"
+# print("File location using os.getcwd():", os.getcwd())
+NoPersonImg =  os.path.join(os.getcwd(), "noPerson.png")
 ImgTest = NoPersonImg
 ImgResult = NoPersonImg
 
@@ -36,6 +39,7 @@ height = fid.winfo_screenheight()
 fid.state('zoomed') 
 #  pengaturan warna bg
 fid['background'] = bg
+Camera_On = False
 
 # # Add image file
 # bga = PhotoImage(file = "BG.jpg")
@@ -52,8 +56,48 @@ fid['background'] = bg
 # bar.pack(expand=1, fill=X)
 
 # Functions
+
+def refresh():
+    timeExecution.configure(text=00.00)
+    ResultBox.configure(text='None', fg='white')
+    imgChangeN = ImageTk.PhotoImage(Image.open(NoPersonImg).resize((widthPic, heightPic)))
+    TestR.configure(image=imgChangeN)
+    TestR.image = imgChangeN
+    ChooseFile.configure
+
+def SwitchCamera():
+    global Camera_On, cap, TestI, cam
+    refresh()
+    if(Camera_On):
+        CamButton.configure(text="Camera off", fg='red')
+        ChooseFile.configure(state=NORMAL)
+        cam.place_forget()
+        TestI.place(x=0.50 * width, y=0.500 * height, anchor=CENTER)
+        cap.release()
+        Camera_On=False
+    else:
+        CamButton.configure(text="Camera on", fg='green')
+        ChooseFile.configure(state=DISABLED)
+        TestI.place_forget()
+        cam.place(x=0.50 * width, y=0.500 * height, anchor=CENTER)
+        cap = cv.VideoCapture(0) 
+        showFrame()
+        Camera_On=True
+
+def showFrame():
+   # Get the latest frame and convert into Image
+   cv2image= cv.cvtColor(cap.read()[1],cv.COLOR_BGR2RGB)
+   img = Image.fromarray(cv2image)
+   # Convert image to PhotoImage
+   imgTK = ImageTk.PhotoImage(image = img)
+   cam.imgTK = imgTK
+   cam.configure(image=imgTK)
+   # Repeat after an interval to capture continiously
+   cam.after(20, showFrame)
+   
 def AskFolder():
     global folderName
+    refresh()
     folderName = filedialog.askdirectory(initialdir="/", title="Choose a Dataset")
     if (os.path.isdir(folderName)):
         labelFolder.configure(text="Folder : " + os.path.basename(folderName), fg="green")
@@ -61,6 +105,7 @@ def AskFolder():
 def AskFile():
     global fileName
     # AskFile.fileName = filedialog.askopenfilename(
+    refresh()
     fileName = filedialog.askopenfilename(
         initialdir="/",
         title="Choose a file",
@@ -77,6 +122,7 @@ def AskFile():
         TestI.image = imgChangeN 
 
 def Execution():
+    global fileName, folderName
     start_time = time.time()
     # Menjalankan program
     
@@ -89,18 +135,92 @@ def Execution():
     #     # print()
     # except :
     #     print("belum input\n")
+    if (not Camera_On):
+        if (os.path.isfile(fileName) and os.path.isdir(folderName)):
+        # if ((fileName != 'notOpen') and (folderName != 'notOpen')): # pakai isdir !!
+        # if (fileName != 'notOpen'):
+            print("\nMenjalankan program dengan input file test image")
+            print("...................")
+            print("Dataset      : " + folderName)
+            print("Test image   : " + fileName)
+            # program 
+            test_img = preprocessFile(fileName)
+            print("Preprocess test image DONE")
+            dataset_img = preprocess(folderName)
+            print("Preprocess dataset DONE")
+            average_face = face_avg(dataset_img)
+            print("Mean dataset DONE")
+            normal = normalized_face(dataset_img, average_face)
+            print("normal dataset DONE")
+            covariance = covariance_mat(normal)
+            print("Covariance dataset DONE")
+            eig_val, eig_vec = eig_val_and_vec(covariance)
+            eig_vec_img = normal.T @ eig_vec
+            idx = identification(test_img, average_face, normal, eig_vec_img.T)
+            print("Identification image DONE")
+            
+            # listFile = os.listdir(folderName)
+            # fileResult = os.path.join(folderName, listFile[idx])
+            
+            fileR = listFileDataset[idx]
+            imgResult = ImageTk.PhotoImage(Image.open(fileR).resize((widthPic, heightPic)))
+            TestR.configure(image=imgResult)
+            TestR.image = imgResult 
+            
+            resultName = (os.path.splitext(os.path.basename(fileR)))[0]
+            resultNoInt = ''.join([i for i in resultName if not i.isdigit()])
+            ResultBox.configure(text=resultNoInt, fg='light green' ) # perlu .
+            print("hasil")
+            print(idx)
+            print(resultName)
+            
+        else :
+            print("ada yang masih belum input")
+    else:
+        if (os.path.isdir(folderName)):
+            print("\nMenjalankan program FaceID dengan kamera")
+            print("...................")
+            result, imgCam = cap.read()
+            # imgCam = cv.resize(imgCam, (256,256)) 
+            print("Dataset      : " + folderName)
+            # print(imgCam)
+            fileName = imgCam # ??
+            # program
+            print(fileName.shape)
+            # cv.imwrite("nig.png", fileName)
+            test_img = preprocessFile(fileName)
+            print("Preprocess test image DONE")
+            dataset_img = preprocess(folderName)
+            print("Preprocess dataset DONE")
+            average_face = face_avg(dataset_img)
+            print("Mean dataset DONE")
+            normal = normalized_face(dataset_img, average_face)
+            print("normal dataset DONE")
+            covariance = covariance_mat(normal)
+            print("Covariance dataset DONE")
+            eig_val, eig_vec = eig_val_and_vec(covariance)
+            eig_vec_img = normal.T @ eig_vec
+            idx = identification(test_img, average_face, normal, eig_vec_img.T)
+            # ResultBox.configure(text='DONE', fg='light green') 
+            print("Identification image DONE")
+            
+            # listFile = os.listdir(folderName)
+            # fileResult = os.path.join(folderName, listFile[idx])
+            # imgResult = ImageTk.PhotoImage(Image.open(fileResult).resize((widthPic, heightPic)))
+            # TestR.configure(image=imgResult)
+            # TestR.image = imgResult 
+            # resultName = (os.path.splitext(listFile[idx]))[0]
+            # resultNoInt = ''.join([i for i in resultName if not i.isdigit()])
+            # ResultBox.configure(text=resultNoInt, fg='light green' ) # perlu .
+            # print("hasil")
+            # print(idx)
+            # print(resultName)
+
+
+
+        else :
+            print("belum input dataset")
         
-    if ((fileName != 'notOpen') and (folderName != 'notOpen')):
-    # if (fileName != 'notOpen'):
-        print("\nMenjalankan program")
-        print("...................")
-        print("Dataset      : " + folderName)
-        print("Test image   : " + fileName)
-        # program 
-        
-        
-    else :
-        print("belum input")
         
     timeFormat = time.time() - start_time
     timeExecution.configure(text=("{:0.2f}".format(timeFormat)))
@@ -110,6 +230,10 @@ def Execution():
 
 # Widgets
 fid.title("FaceID")
+
+cam = Label(fid, borderwidth=0, width=widthPic, height=heightPic,  anchor=CENTER, bg='black')
+# cap = cv.VideoCapture(0)
+
 fidLabel1 = Label(
     fid,
     text="FaceID - Face Recognition",
@@ -174,10 +298,10 @@ ChooseFile = Button(
     text="Choose a picture",
     padx=25,
     pady=25,
-    command=AskFile,
     fg= CWrite,
     bg= Cblock,
-    borderwidth=0
+    borderwidth=0,
+    command=AskFile,  
 )
 Execute = Button(
     fid,
@@ -188,6 +312,17 @@ Execute = Button(
     command=Execution,
     font=("times", 17, "bold"),
     bg= CBlock2
+)
+CamButton = Button(
+    fid,
+    text="Camera",
+    fg=CWrite,
+    padx=15,
+    pady=15,
+    font=("times", 17, "bold"),
+    bg= CBlock2,
+    command=SwitchCamera,
+    # cam.configure(x=0.50 * width, y=0.500 * height)
 )
 
 # Shoving it onto the screen
@@ -206,11 +341,14 @@ ChooseFolder.place(x=0.08 * width, y=0.300 * height, anchor=CENTER)
 labelFile.place(x=0.25 * width, y=0.450 * height, anchor=CENTER)
 ChooseFile.place(x=0.08 * width, y=0.450 * height, anchor=CENTER)
 Execute.place(x=0.20 * width, y=0.580 * height, anchor=CENTER)
+CamButton.place(x=0.10 * width, y=0.580 * height, anchor=CENTER)
 
 testImage.place(x=0.50 * width, y=0.200 * height, anchor=CENTER)
 TestI.place(x=0.50 * width, y=0.500 * height, anchor=CENTER)
 ClosestResult.place(x=0.80 * width, y=0.200 * height, anchor=CENTER)
 TestR.place(x=0.80 * width, y=0.500 * height, anchor=CENTER)
+# cam.place(x=0.50 * width, y=0.500 * height, anchor=CENTER)
+# showFrame()
 
 timeEx.place(x=0.45 * width, y=0.800 * height, anchor=CENTER)
 timeExecution.place(x=0.520 * width, y=0.800 * height, anchor=CENTER)
