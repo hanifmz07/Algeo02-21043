@@ -7,6 +7,8 @@ import math as mt
 import time
 import os
 
+listFileDataset = []
+
 # FUNCTIONS
 def resize(filename):
     resized = cv.resize(filename, (256, 256))
@@ -68,6 +70,7 @@ def cropface(file):
 
 # Function preprocess image
 def preprocess(dir):
+    global listFileDataset
     S = np.empty((0, 256*256), int)
     for root, dirs, files in os.walk(dir):
         for filename in files:
@@ -91,5 +94,26 @@ def preprocess(dir):
 
             # append to array of image matrixs
             S = np.append(S, [gray_image.flatten()], axis=0)
+            
+            listFileDataset.append(os.path.join(root,filename))
+    return S
+
+def preprocessFile(dir):
+    S = np.empty((0, 256*256), int)
+    # print(os.path.join(root, filename))
+
+    # change background to white
+    pic = changebg(dir) # kalau pic belum bisa 
+    # detect and crop face
+    face = cropface(pic)
+        
+    # Resize image to 256 x 256
+    resized = resize(face)
+    # convert to grayscale
+    gray_image = grayscale(resized)
+
+    # append to array of image matrixs
+    S = np.append(S, [gray_image.flatten()])
+    # S = np.reshape(65536,)
     return S
 
