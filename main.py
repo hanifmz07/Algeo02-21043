@@ -167,7 +167,12 @@ def Execution():
             print("Covariance dataset DONE")
             eig_val, eig_vec = eig_val_and_vec(covariance)
             eig_vec_img = normal.T @ eig_vec
-            idx = identification(test_img, average_face, normal, eig_vec_img.T)
+
+            E_pred = np.empty((0, eig_vec_img.T.shape[1]), 'float64')
+            for i in range(int(eig_vec_img.T.shape[0]*0.3)):
+                E_pred = np.append(E_pred, [eig_vec_img.T[i]], axis=0)
+
+            idx = identification(test_img, average_face, normal, E_pred, dataset_img)
             print("Identification image DONE")
             
             # listFile = os.listdir(folderName)

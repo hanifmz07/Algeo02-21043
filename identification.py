@@ -1,25 +1,46 @@
 from eigen import *
 
 # from GUI import *
+# Get threshold for identification (minimum value of training image distances)
+def get_threshold(train):
+    max = np.linalg.norm(train[0] - train[1])
+    for i in range(train.shape[0]- 1):
+        for j in range(i + 1, train.shape[0]):
+            dist = np.linalg.norm(train[i] - train[j])
+            if (max < dist):
+                max = dist
+    return max * 0.8
 
-# Face identification
-def identification(testFace, M, normal, Eigenface):
+def identification(testFace, M, normal, eigenFace, trainImg):
     # Test weights calculation
     difTF = testFace - M
-    eigenFaceTest = Eigenface @ difTF
+    eigenFaceTest = eigenFace @ difTF
 
     # Train weights calculation
-    Y = Eigenface @ normal.T
-    
+    Y = eigenFace @ normal.T
+
+    # eigenFaceTest = minMaxScaler(eigenFaceTest)
+    # for i in range(Y.shape[0]):
+    #     Y.T[i] = minMaxScaler(Y.T[i])
+
     # Storing each euclidean distance to an array
-    n = len(Eigenface)
+    n = len(eigenFace)
     ArrResult = np.arange(0, n, dtype=float) 
+    
+    # Euclidean distance between test weights and train weights
     for i in range (n):
-        # Euclidean distance between test weights and train weights
         ArrResult[i] = np.linalg.norm(Y.T[i] - eigenFaceTest)
     
     # Return the index of the minimum distance
-    return np.argmin(ArrResult)
+    idxMin = np.argmin(ArrResult)
+    threshold = get_threshold(trainImg)
+    # print(ArrResult[idxMin])
+    
+    if (ArrResult[idxMin] > threshold):
+        # Barusan ini diganti idxMin lg soalnya blm nemu angka yg tepat, ntar klo setelah coba dapet angka yg bagus ganti lg aja jadi -1
+        return idxMin
+    else:
+        return idxMin
 
 # Store eigenfaces in a numpy binary file
 def storeEigenFace(eigen_face):

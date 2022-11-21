@@ -69,27 +69,3 @@ def scaledEigenFace(X):
     E_scaled = np.empty((0, X.shape[1]), 'float64')
     for i in range(int(X.shape[0])):
         E_scaled = np.append(E_scaled, [minMaxScalerImg(X.T[i])], axis=0)
-
-# Face identification
-def identification(testFace, M, normal, Eigenface):
-    # Test weights calculation
-    difTF = testFace - M
-    eigenFaceTest = Eigenface @ difTF
-
-    # Train weights calculation
-    Y = Eigenface @ normal.T
-    
-    # Storing each euclidean distance to an array
-    n = len(Eigenface)
-    ArrResult = np.arange(0, n, dtype=float) 
-    for i in range (n):
-        # Euclidean distance between test weights and train weights
-        ArrResult[i] = np.linalg.norm(Y.T[i] - eigenFaceTest)
-    
-    # Return the index of the minimum distance
-    return np.argmin(ArrResult)
-
-# Store eigenfaces in a numpy binary file
-def storeEigenFace(eigen_face):
-    return np.save('eigenface', eigen_face)
-
