@@ -11,7 +11,8 @@ def get_threshold(train):
                 max = dist
     return max * 0.8
 
-def identification(testFace, M, normal, eigenFace, trainImg):
+def identification(testFace, M, normal, eigenFace):
+# def identification(testFace, M, normal, eigenFace, trainImg):
     # Test weights calculation
     difTF = testFace - M
     eigenFaceTest = eigenFace @ difTF
@@ -32,15 +33,16 @@ def identification(testFace, M, normal, eigenFace, trainImg):
         ArrResult[i] = np.linalg.norm(Y.T[i] - eigenFaceTest)
     
     # Return the index of the minimum distance
-    idxMin = np.argmin(ArrResult)
-    threshold = get_threshold(trainImg)
+    return np.argmin(ArrResult)
+    # idxMin = np.argmin(ArrResult)
+    # threshold = get_threshold(trainImg)
     # print(ArrResult[idxMin])
     
-    if (ArrResult[idxMin] > threshold):
-        # Barusan ini diganti idxMin lg soalnya blm nemu angka yg tepat, ntar klo setelah coba dapet angka yg bagus ganti lg aja jadi -1
-        return idxMin
-    else:
-        return idxMin
+    # if (ArrResult[idxMin] > threshold):
+    #     # Barusan ini diganti idxMin lg soalnya blm nemu angka yg tepat, ntar klo setelah coba dapet angka yg bagus ganti lg aja jadi -1
+    #     return idxMin
+    # else:
+    # return idxMin
 
 # Store eigenfaces in a numpy binary file
 def storeEigenFace(eigen_face):
