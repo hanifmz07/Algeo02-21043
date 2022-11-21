@@ -32,7 +32,7 @@ heightLF = height // 360
 
 fileName = 'notOpen'
 folderName = 'notOpen'
-NoPersonImg = "pictures\\noPerson.png"
+NoPersonImg = "pictures\\noPerson2.jpeg"
 BG = "pictures\\BG.jpg"
 print("File location using os.getcwd():", os.getcwd())
 NoPersonImg =  os.path.join(os.getcwd(), NoPersonImg)
@@ -279,7 +279,7 @@ labelFile = Label(
     text="You haven't choose a file",
     width=widthLF,
     height=heightLF,
-    fg="#FFCCCB",
+    fg="#ed7878",
     bg=CBright,
     font=("times", 17)
 )
@@ -288,7 +288,8 @@ labelFolder = Label(
     text="You haven't choose a folder",
     width=widthLF,
     height=heightLF,
-    fg="#FFCCCB",
+    # fg="#FFCCCB",
+    fg="#ed7878",
     bg=CBright,
     font=("times", 17),
 )
@@ -300,9 +301,9 @@ timeEx = Label(fid, text="Execution time :", bg=bgBlock2, fg=CWrite, font=("time
 timeExecution = Label(fid, text="00.00", bg=bgBlock2, fg="lightgreen", font=("times", 20))
 
 TestImage = ImageTk.PhotoImage(Image.open(NoPersonImg).resize((widthPic, heightPic)))
-TestI = Label(image=TestImage, borderwidth=0.5, bg='dark blue')
+TestI = Label(image=TestImage, borderwidth=0, bg='dark blue')
 TestResult = ImageTk.PhotoImage(Image.open(NoPersonImg).resize((widthPic, heightPic)))
-TestR = Label(image=TestResult, borderwidth=0.5, bg='dark blue')
+TestR = Label(image=TestResult, borderwidth=0, bg='dark blue')
 
 # Button
 ChooseFolder = Button(
