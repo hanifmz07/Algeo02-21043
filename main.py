@@ -7,7 +7,7 @@ import time
 from PIL import ImageTk, Image
 from identification import *
 import os
-from multiprocessing import Process
+# from multiprocessing import Process
 
 '''------------------------------------------ SET UP ------------------------------------------'''
 
@@ -157,7 +157,7 @@ def AskFolder():
 
 def AskFile():
     global fileName
-    refresh()
+    refreshPartial()
     fileName = filedialog.askopenfilename(
         initialdir="/",
         title="Choose a file",
