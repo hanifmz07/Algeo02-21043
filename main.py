@@ -129,6 +129,7 @@ def train_dataset():
     else:
         # program train a dataset
         if (os.path.isdir(folderName)):
+            start = time.time()
             train_dataset_condition=True
             dataset_img = preprocess(folderName)
             print("Preprocess dataset DONE")
@@ -141,6 +142,7 @@ def train_dataset():
             eig_val, eig_vec = eig_val_and_vec(covariance)
             eig_vec_img = normal.T @ eig_vec
             Train.configure(text="Dataset Trained", fg = 'green')
+            timeExecution.configure(text=("{:0.2f}".format(time.time() - start)))
         else:
             print("belum input dataset")
 
