@@ -40,16 +40,14 @@ Background = os.path.join(os.getcwd(), BG )
 ImgTest = NoPersonImg
 ImgResult = NoPersonImg
 Camera_On = False
-# print(width/widthPic)
-# print(height/heightPic)
-# print(width/padxButtonCam)
-# print(height/padyButtonCam)
-# print(width/padxButtonExc)
-# print(height/padyButtonExc)
-# print(width/padxCF)
-# print(height/padyCF)
-# print(width/widthLF)
-# print(height/heightLF)
+train_dataset_condition = False
+dataset_img = []
+average_face = []
+normal = []
+covariance = []
+eig_vec = []
+eig_val = []
+eig_vec_img = []
 
 bg = '#071102'
 bgBlock = '#0b2000'
@@ -62,7 +60,7 @@ CBright = '#1e453e'
 CDark = '#110a4c'
 red = '#bc0f0f'
 
-#  pengaturan warna bg
+# pengaturan background
 # fid['background'] = bg
 bgOpen = ImageTk.PhotoImage(Image.open(Background).resize((width, height)))
 bg_fid = Label(fid, image = bgOpen)
@@ -71,56 +69,92 @@ bg_fid.place(height=height, width=width)
 
 '''------------------------------------------ Functions ------------------------------------------'''
 
-def refresh():
+def refreshPartial():
+    global train_dataset_condition
     timeExecution.configure(text=00.00)
     ResultBox.configure(text='None', fg=red)
     imgChangeN = ImageTk.PhotoImage(Image.open(NoPersonImg).resize((widthPic, heightPic)))
     TestR.configure(image=imgChangeN)
     TestR.image = imgChangeN
     ChooseFile.configure
+    
+def refresh():
+    global train_dataset_condition
+    timeExecution.configure(text=00.00)
+    ResultBox.configure(text='None', fg=red)
+    imgChangeN = ImageTk.PhotoImage(Image.open(NoPersonImg).resize((widthPic, heightPic)))
+    TestR.configure(image=imgChangeN)
+    TestR.image = imgChangeN
+    ChooseFile.configure
+    Train.configure(text="Train Dataset", fg=CWrite)
+    train_dataset_condition = False
 
 def SwitchCamera():
-    global Camera_On, cap, TestI, cam
-    refresh()
+    global Camera_On, capture, TestI, cam
+    refreshPartial()
     if(Camera_On):
         CamButton.configure(text="Camera off", fg=red)
         ChooseFile.configure(state=NORMAL)
         cam.place_forget()
         TestI.place(x=0.50 * width, y=0.500 * height, anchor=CENTER)
-        cap.release()
+        capture.release()
         Camera_On=False
     else:
         CamButton.configure(text="Camera on", fg='green')
         ChooseFile.configure(state=DISABLED)
         TestI.place_forget()
         cam.place(x=0.50 * width, y=0.500 * height, anchor=CENTER, width=widthPic, height=heightPic, bordermode="ignore")
-        cap = cv.VideoCapture(0) 
+        capture = cv.VideoCapture(0) 
         showFrame()
         Camera_On=True
 
 def showFrame():
-   # Get the latest frame and convert into Image
-   cv2image= cv.cvtColor(cap.read()[1],cv.COLOR_BGR2RGB)
-   img = Image.fromarray(cv2image)
+   # Change the latest capture to image
+   cvImg= cv.cvtColor(capture.read()[1],cv.COLOR_BGR2RGB)
+   img = Image.fromarray(cvImg)
    # Convert image to PhotoImage
    imgTK = ImageTk.PhotoImage(image = img)
    cam.imgTK = imgTK
    cam.configure(image=imgTK)
    # Repeat after an interval to capture continiously
    cam.after(20, showFrame)
-   
+
+def train_dataset():
+    global folderName, train_dataset_condition, dataset_img, average_face, normal, covariance, eig_vec, eig_val, eig_vec_img
+    if (train_dataset_condition):
+        train_dataset_condition=False
+        Train.configure(text="Train Dataset", fg = CWrite)
+        # program mematikan train
+        
+    else:
+        # program train a dataset
+        if (os.path.isdir(folderName)):
+            train_dataset_condition=True
+            dataset_img = preprocess(folderName)
+            print("Preprocess dataset DONE")
+            average_face = face_avg(dataset_img)
+            print("Mean dataset DONE")
+            normal = normalized_face(dataset_img, average_face)
+            print("normal dataset DONE")
+            covariance = covariance_mat(normal)
+            print("Covariance dataset DONE")
+            eig_val, eig_vec = eig_val_and_vec(covariance)
+            eig_vec_img = normal.T @ eig_vec
+            Train.configure(text="Dataset Trained", fg = 'green')
+        else:
+            print("belum input dataset")
+
 def AskFolder():
     global folderName
     refresh()
     folderName = filedialog.askdirectory(initialdir="/", title="Choose a Dataset")
     if (os.path.isdir(folderName)):
-        labelFolder.configure(text="Folder : " + os.path.basename(folderName), fg="green")
+        labelFolder.configure(text="Folder : " + os.path.basename(folderName), fg=CWrite)
     else :
         labelFolder.configure(text="None", fg=red)
 
 def AskFile():
     global fileName
-    # AskFile.fileName = filedialog.askopenfilename(
     refresh()
     fileName = filedialog.askopenfilename(
         initialdir="/",
@@ -128,19 +162,15 @@ def AskFile():
         filetypes=(("Image File (.jpg)", "*.jpg*"), ("All Files", "*.*")),
     )
     if (os.path.isfile(fileName)):
-        labelFile.configure(text="File : " + os.path.basename(fileName), fg="green")
+        labelFile.configure(text="File : " + os.path.basename(fileName), fg=CWrite)
         imgChangeN = ImageTk.PhotoImage(Image.open(fileName).resize((widthPic, heightPic)))
-        # labelFile.configure(text="File : " + os.path.basename(AskFile.fileName), fg="green")
-        # imgChangeN = ImageTk.PhotoImage(Image.open(AskFile.fileName).resize((widthPic, heightPic)))
-
-        # imgChange = imgChangeN.resize((350, 350))
         TestI.configure(image=imgChangeN)
         TestI.image = imgChangeN 
     else :
         labelFile.configure(text="None", fg=red)
 
 def Execution():
-    global fileName, folderName
+    global fileName, folderName, dataset_img, average_face, normal, covariance, eig_vec, eig_val, eig_vec_img
     start_time = time.time()
     
     # Menjalankan program
@@ -154,20 +184,22 @@ def Execution():
             # program 
             test_img = preprocessFile(fileName)
             print("Preprocess test image DONE")
-            dataset_img = preprocess(folderName)
-            print("Preprocess dataset DONE")
-            average_face = face_avg(dataset_img)
-            print("Mean dataset DONE")
-            normal = normalized_face(dataset_img, average_face)
-            print("normal dataset DONE")
-            covariance = covariance_mat(normal)
-            print("Covariance dataset DONE")
-            eig_val, eig_vec = eig_val_and_vec(covariance)
-            eig_vec_img = normal.T @ eig_vec
+            if (not train_dataset_condition) :
+                dataset_img = preprocess(folderName)
+                print("Preprocess dataset DONE")
+                average_face = face_avg(dataset_img)
+                print("Mean dataset DONE")
+                normal = normalized_face(dataset_img, average_face)
+                print("normal dataset DONE")
+                covariance = covariance_mat(normal)
+                print("Covariance dataset DONE")
+                eig_val, eig_vec = eig_val_and_vec(covariance)
+                eig_vec_img = normal.T @ eig_vec
 
             # E_pred = np.empty((0, eig_vec_img.T.shape[1]), 'float64')
             # for i in range(int(eig_vec_img.T.shape[0]*0.3)):
             #     E_pred = np.append(E_pred, [eig_vec_img.T[i]], axis=0)
+            # idx = identification(test_img, average_face, normal, E_pred)
 
             idx = identification(test_img, average_face, normal, eig_vec_img.T)
             # idx = identification(test_img, average_face, normal, E_pred, dataset_img)
@@ -194,7 +226,7 @@ def Execution():
         if (os.path.isdir(folderName)):
             print("\nMenjalankan program FaceID dengan kamera")
             print("...................")
-            result, imgCam = cap.read()
+            result, imgCam = capture.read()
             # imgCam = cv.resize(imgCam, (256,256)) 
             print("Dataset      : " + folderName)
             # print(imgCam)
@@ -207,26 +239,29 @@ def Execution():
             # cv.imwrite("nig.png", fileName)
             # cam.place(x=0.50 * width, y=0.500 * height, anchor=CENTER, width=widthPic, height=heightPic, bordermode="ignore")
             
-            # cap = cv.VideoCapture(0) 
+            # capture = cv.VideoCapture(0) 
             
             test_img = preprocessPhoto(fileName)
             # timeExecution.configure(text=("{:0.2f}".format(time.time() - start_time)))
             # ResultBox.configure(text='Preprocess test image DONE', fg='light green' ) 
             print("Preprocess test image DONE")
-            dataset_img = preprocess(folderName)
-            # ResultBox.configure(text="Preprocess dataset DONE", fg='light green' ) 
-            print("Preprocess dataset DONE")
-            average_face = face_avg(dataset_img)
-            # ResultBox.configure(text="Mean dataset DONE", fg='light green' ) 
-            print("Mean dataset DONE")
-            normal = normalized_face(dataset_img, average_face)
-            # ResultBox.configure(text="Normal dataset DONE", fg='light green' ) 
-            print("Normal dataset DONE")
-            covariance = covariance_mat(normal)
-            # ResultBox.configure(text="Covariance dataset DONE", fg='light green' ) 
-            print("Covariance dataset DONE")
-            eig_val, eig_vec = eig_val_and_vec(covariance)
-            eig_vec_img = normal.T @ eig_vec
+            
+            if (not train_dataset_condition) :
+                dataset_img = preprocess(folderName)
+                # ResultBox.configure(text="Preprocess dataset DONE", fg='light green' ) 
+                print("Preprocess dataset DONE")
+                average_face = face_avg(dataset_img)
+                # ResultBox.configure(text="Mean dataset DONE", fg='light green' ) 
+                print("Mean dataset DONE")
+                normal = normalized_face(dataset_img, average_face)
+                # ResultBox.configure(text="Normal dataset DONE", fg='light green' ) 
+                print("Normal dataset DONE")
+                covariance = covariance_mat(normal)
+                # ResultBox.configure(text="Covariance dataset DONE", fg='light green' ) 
+                print("Covariance dataset DONE")
+                eig_val, eig_vec = eig_val_and_vec(covariance)
+                eig_vec_img = normal.T @ eig_vec
+                
             idx = identification(test_img, average_face, normal, eig_vec_img.T)
             # ResultBox.configure(text='DONE', fg='light green') 
             print("Identification image DONE")
@@ -258,7 +293,7 @@ def Execution():
 fid.title("FaceID")
 
 cam = Label(fid, borderwidth=0, width=widthPic, height=heightPic,  anchor=CENTER, bg='black')
-# cap = cv.VideoCapture(0)
+# capture = cv.VideoCapture(0)
 
 fidLabel1 = Label(
     fid,
@@ -338,6 +373,16 @@ Execute = Button(
     font=("times", 17, "bold"),
     bg= CBlock2
 )
+Train = Button(
+    fid,
+    text="Train Dataset",
+    fg=CWrite,
+    padx=padxButtonExc,
+    pady=padyButtonExc,
+    command=train_dataset,
+    font=("times", 17, "bold"),
+    bg= CBlock2
+)
 CamButton = Button(
     fid,
     text="Camera",
@@ -365,8 +410,9 @@ ChooseFolder.place(x=0.1 * width, y=0.300 * height, anchor=CENTER)
 
 labelFile.place(x=0.26 * width, y=0.450 * height, anchor=CENTER)
 ChooseFile.place(x=0.1 * width, y=0.450 * height, anchor=CENTER)
-Execute.place(x=0.20 * width, y=0.580 * height, anchor=CENTER)
-CamButton.place(x=0.10 * width, y=0.580 * height, anchor=CENTER)
+Execute.place(x=0.295 * width, y=0.580 * height, anchor=CENTER)
+Train.place(x=0.195 * width, y=0.580 * height, anchor=CENTER)
+CamButton.place(x=0.095 * width, y=0.580 * height, anchor=CENTER)
 
 testImage.place(x=0.5 * width, y=0.200 * height, anchor=CENTER)
 TestI.place(x=0.5 * width, y=0.500 * height, anchor=CENTER)
