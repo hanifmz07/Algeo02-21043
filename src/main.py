@@ -193,17 +193,8 @@ def Execution():
                 eig_val, eig_vec = eig_val_and_vec(covariance)
                 eig_vec_img = normal.T @ eig_vec
 
-            # E_pred = np.empty((0, eig_vec_img.T.shape[1]), 'float64')
-            # for i in range(int(eig_vec_img.T.shape[0]*0.3)):
-            #     E_pred = np.append(E_pred, [eig_vec_img.T[i]], axis=0)
-            # idx = identification(test_img, average_face, normal, E_pred)
-
             idx = identification(test_img, average_face, normal, eig_vec_img.T)
-            # idx = identification(test_img, average_face, normal, E_pred, dataset_img)
             print("Identification image DONE")
-            
-            # listFile = os.listdir(folderName)
-            # fileResult = os.path.join(folderName, listFile[idx])
             
             fileR = listFileDataset[idx]
             imgResult = ImageTk.PhotoImage(Image.open(fileR).resize((widthPic, heightPic)))
@@ -224,43 +215,29 @@ def Execution():
             print("\nMenjalankan program FaceID dengan kamera")
             print("...................")
             result, imgCam = catch.read()
-            # imgCam = cv.resize(imgCam, (256,256)) 
-            print("Dataset      : " + folderName)
-            # print(imgCam)
-            # fileName = cv.imresize() # ??
-            # fileName = smart_resize(imgCam, 256 )            
+            print("Dataset      : " + folderName)         
             fileName = imgCam 
-            # fileName = np.reshape(fileName, (256,256, 3))            
+                
             # program
             print(fileName.shape)
-            # cv.imwrite("nig.png", fileName)
-            # cam.place(x=0.50 * width, y=0.500 * height, anchor=CENTER, width=widthPic, height=heightPic, bordermode="ignore")
-            
-            # catch = cv.VideoCapture(0) 
             
             test_img = preprocessPhoto(fileName)
-            # timeExecution.configure(text=("{:0.2f}".format(time.time() - start_time)))
-            # ResultBox.configure(text='Preprocess test image DONE', fg='light green' ) 
+            
             print("Preprocess test image DONE")
             
             if (not train_dataset_condition) :
                 dataset_img = preprocess(folderName)
-                # ResultBox.configure(text="Preprocess dataset DONE", fg='light green' ) 
                 print("Preprocess dataset DONE")
                 average_face = face_avg(dataset_img)
-                # ResultBox.configure(text="Mean dataset DONE", fg='light green' ) 
                 print("Mean dataset DONE")
                 normal = normalized_face(dataset_img, average_face)
-                # ResultBox.configure(text="Normal dataset DONE", fg='light green' ) 
                 print("Normal dataset DONE")
                 covariance = covariance_mat(normal)
-                # ResultBox.configure(text="Covariance dataset DONE", fg='light green' ) 
                 print("Covariance dataset DONE")
                 eig_val, eig_vec = eig_val_and_vec(covariance)
                 eig_vec_img = normal.T @ eig_vec
                 
             idx = identification(test_img, average_face, normal, eig_vec_img.T)
-            # ResultBox.configure(text='DONE', fg='light green') 
             print("Identification image DONE")
             
             fileR = listFileDataset[idx]
@@ -281,16 +258,12 @@ def Execution():
         
         
     timeExecution.configure(text=("{:0.2f}".format(time.time() - start_time)))
-    # Execute.configure(bg = Cblock)
-    # timeExecution = Label(
-    # fid, text=("{:0.2f}".format(timeFormat)), fg="green", font=("times", 14)
 
 '''------------------------------------------ Widgets ------------------------------------------ '''
 
 fid.title("FaceIT")
 
 cam = Label(fid, borderwidth=0, width=widthPic, height=heightPic,  anchor=CENTER, bg='black')
-# catch = cv.VideoCapture(0)
 
 fidLabel1 = Label(
     fid,
@@ -389,19 +362,13 @@ CamButton = Button(
     font=("times", 17, "bold"),
     bg= CBlock2,
     command=SwitchCamera,
-    # cam.configure(x=0.50 * width, y=0.500 * height)
 )
 
 # Shoving it onto the screen
-# fidLabel1.grid(row=0, column=10)
 fidLabel1.place(x=0.5 * width, y=0.045 * height, anchor=CENTER)  # bisa pakai rely or relx
-# fidLabel1.pack(side=TOP)
 fidLabel2.place(x=0.50 * width, y=0.106 * height, anchor=CENTER)
-# fidLabel2.grid(row=15, column=)
 labelFolder.place(x=0.26 * width, y=0.300 * height, anchor=CENTER)
-# labelFolder.grid(row=10, column=10)
 ChooseFolder.place(x=0.1 * width, y=0.300 * height, anchor=CENTER)
-# ChooseFolder.grid(row=10, column=2)
 
 labelFile.place(x=0.26 * width, y=0.450 * height, anchor=CENTER)
 ChooseFile.place(x=0.1 * width, y=0.450 * height, anchor=CENTER)
@@ -413,8 +380,6 @@ testImage.place(x=0.5 * width, y=0.200 * height, anchor=CENTER)
 TestI.place(x=0.5 * width, y=0.500 * height, anchor=CENTER)
 ClosestResult.place(x=0.8 * width, y=0.200 * height, anchor=CENTER)
 TestR.place(x=0.8 * width, y=0.500 * height, anchor=CENTER)
-# cam.place(x=0.50 * width, y=0.500 * height, anchor=CENTER)
-# displayCam()
 
 timeEx.place(x=0.45 * width, y=0.800 * height, anchor=CENTER)
 timeExecution.place(x=0.520 * width, y=0.800 * height, anchor=CENTER)

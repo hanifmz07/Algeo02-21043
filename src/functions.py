@@ -5,10 +5,6 @@ ROUND = 2
 
 # Face average
 def face_avg(X):
-    # M = len(X)
-    # Mean = (np.sum(X, axis=0))
-    # Mean = np.floor_divide(Mean, M) # round
-    # return Mean
     return np.sum(X, axis=0) / X.shape[0]
 
 # Train_face -  average_face

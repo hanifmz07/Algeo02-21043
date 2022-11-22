@@ -20,53 +20,53 @@ def grayscale(filename):
 
 def changebg(filename):
     # Initialize segmentation
-    change_background_mp = mp.solutions.selfie_segmentation
-    change_bg_segment = change_background_mp.SelfieSegmentation()
+    background_mp = mp.solutions.selfie_segmentation
+    background_segment = background_mp.SelfieSegmentation()
 
     # read image file
-    sample_img = cv.imread(filename)
+    img = cv.imread(filename)
 
     # convert the BGR format image to an RGB format
-    RGB_sample_img = cv.cvtColor(sample_img, cv.COLOR_BGR2RGB)
+    RGB = cv.cvtColor(img, cv.COLOR_BGR2RGB)
 
-    result = change_bg_segment.process(RGB_sample_img)
+    result = background_segment.process(RGB)
 
     # binary masking to mask person image
-    binary_mask = result.segmentation_mask > 0.9
+    mask = result.segmentation_mask > 0.9
 
     # convert to 3-channel
-    binary_mask_3 = np.dstack((binary_mask,binary_mask,binary_mask))
+    mask_3_channel = np.dstack((mask,mask,mask))
 
     # change background color to white
-    output_image = np.where(binary_mask_3, sample_img, 255)  
+    output = np.where(mask_3_channel, img, 255)  
 
     # write result to an image file
-    return output_image
+    return output
 
 def changebgPhoto(filename):
     # Initialize segmentation
-    change_background_mp = mp.solutions.selfie_segmentation
-    change_bg_segment = change_background_mp.SelfieSegmentation()
+    background_mp = mp.solutions.selfie_segmentation
+    background_segment = background_mp.SelfieSegmentation()
 
     # read image file
-    sample_img = (filename)
+    img = (filename)
 
     # convert the BGR format image to an RGB format
-    RGB_sample_img = cv.cvtColor(sample_img, cv.COLOR_BGR2RGB)
+    RGB = cv.cvtColor(img, cv.COLOR_BGR2RGB)
 
-    result = change_bg_segment.process(RGB_sample_img)
+    result = background_segment.process(RGB)
 
     # binary masking to mask person image
-    binary_mask = result.segmentation_mask > 0.9
+    mask = result.segmentation_mask > 0.9
 
     # convert to 3-channel
-    binary_mask_3 = np.dstack((binary_mask,binary_mask,binary_mask))
+    mask_3_channel = np.dstack((mask,mask,mask))
 
     # change background color to white
-    output_image = np.where(binary_mask_3, sample_img, 255)  
+    output = np.where(mask_3_channel, img, 255)  
 
     # write result to an image file
-    return output_image
+    return output
 
 def cropface(file):
 
@@ -74,10 +74,10 @@ def cropface(file):
     gray = cv.cvtColor(file, cv.COLOR_BGR2GRAY)
     
     # Load the cascade
-    face_cascade = cv.CascadeClassifier(cv.data.haarcascades + 'haarcascade_frontalface_alt2.xml')
+    cascade = cv.CascadeClassifier(cv.data.haarcascades + 'haarcascade_frontalface_alt2.xml')
     
     # Detect faces
-    faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+    faces = cascade.detectMultiScale(gray, 1.1, 4)
     
     if len(faces) != 1:
         return None
@@ -86,12 +86,7 @@ def cropface(file):
     for (x, y, w, h) in faces:
         cv.rectangle(file, (x, y), (x+w, y+h), (0, 0, 255), 2)
         faces = file[y:y + h, x:x + w]
-        
-    # Display the output
-    # cv.imwrite('detcted.jpg', file)
-    # cv.imshow('img', file)
-    # cv.waitKey()
-    return faces
+        return faces
 
 # Function preprocess image
 def preprocess(dir):
@@ -113,9 +108,6 @@ def preprocess(dir):
             resized = resize(face)
             # convert to grayscale
             gray_image = grayscale(resized)
-            
-            # Check preprocess image
-            # cv.imwrite(f'preprocess/pre_{i}.jpg', gray_image)
 
             # append to array of image matrixs
             S = np.append(S, [gray_image.flatten()], axis=0)
@@ -125,7 +117,6 @@ def preprocess(dir):
 
 def preprocessFile(dir):
     S = np.empty((0, 256*256), int)
-    # print(os.path.join(root, filename))
 
     # change background to white
     pic = changebg(dir) # kalau pic belum bisa 
@@ -140,12 +131,10 @@ def preprocessFile(dir):
 
     # append to array of image matrixs
     S = np.append(S, [gray_image.flatten()])
-    # S = np.reshape(65536,)
     return S
 
 def preprocessPhoto(dir):
     S = np.empty((0, 256*256), int)
-    # print(os.path.join(root, filename))
 
     # change background to white
     pic = changebgPhoto(dir) # kalau pic belum bisa 
@@ -155,13 +144,11 @@ def preprocessPhoto(dir):
     print('sudah sesuai')
     # Resize image to 256 x 256
     
-    # resized = Image.resize(face, (256,256))
     resized = resize(face)
     # convert to grayscale
     gray_image = grayscale(resized)
 
     # append to array of image matrixs
     S = np.append(S, [gray_image.flatten()])
-    # S = np.reshape(65536,)
     return S
 

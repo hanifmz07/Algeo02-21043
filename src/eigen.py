@@ -18,9 +18,6 @@ def eig_val_and_vec(M):
             # If the error reached a very small value, the process will be stopped
             if np.allclose(eigval_prev, M.diagonal(), rtol=1e-6, atol=1e-8):
                 break
-        # i += 1
-        # print(f"{(i+1)/50}%")
-    # print(i)
     return M.diagonal(), eigvec  
 
 # Norm vector
