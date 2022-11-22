@@ -1,6 +1,5 @@
 from eigen import *
 
-# from GUI import *
 # Get threshold for identification (minimum value of training image distances)
 def get_threshold(train):
     max = np.linalg.norm(train[0] - train[1])

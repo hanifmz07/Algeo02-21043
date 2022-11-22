@@ -7,7 +7,7 @@ Tubes 2 Algeo 22/23
 3. Hanif Muhammad Zhafran (13521157)    : Fungsi Eigenvalue, fungsi Eigenvector, dan fungsi Eigenface, mengoptimalisasi deteksi wajah  
 
 # Cara menjalankan program 
-1. Buka terminal pada direktori folder yang berisi main.py (contohnya folder Algeo02-21043 yang di dalamnya terletak main.py)
+1. Buka terminal pada direktori folder src yang berisi main.py 
 2. Jalankan program dengan command "py -3.7 -m  main.py" (program ini meggunakan versi python 3.7 untuk menjalankannya, kecuali jika terdapat library mediapipe pada python versi yang lebih tinggi)
 3. Terdapat beberapa opsi-opsi yang dapat dilakukan untuk deteksi wajah yaitu :
     a. Jika pengguna hanya ingin mendeteksi wajah satu kali dengan dataset yang siberikan maka, pengguna dapat memasukkan dataset dan test image yang ingin dideteksi wajahnya. Kemudian menekan tombol execute untuk memulai pendeteksian. Hasil gambar akan keluar pada bagian result image dan nama hasil wajah akan tampil pada bagian result di pojok kiri bawah. 
