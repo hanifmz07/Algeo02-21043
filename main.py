@@ -53,7 +53,7 @@ bg = '#071102'
 bgBlock = '#0b2000'
 bgBlock2 = '#0b2000'
 titleColor ='#306615'
-Cblock = '#274e13'
+Cblock = '#224612'
 CWrite = '#bdd4b1'
 CBlock2 = '#0b2000'
 CBright = '#1e453e'
@@ -289,14 +289,14 @@ def Execution():
 
 '''------------------------------------------ Widgets ------------------------------------------ '''
 
-fid.title("FaceID")
+fid.title("FaceIT")
 
 cam = Label(fid, borderwidth=0, width=widthPic, height=heightPic,  anchor=CENTER, bg='black')
 # catch = cv.VideoCapture(0)
 
 fidLabel1 = Label(
     fid,
-    text="FaceID - Face Recognition",
+    text="FaceIT - Face Recognition",
     font=("Forte", 68, "bold"),
     justify="center",
     borderwidth=0,
@@ -313,7 +313,7 @@ labelFile = Label(
     text="You haven't choose a file",
     width=widthLF,
     height=heightLF,
-    fg="#ed7878",
+    fg="#e44949",
     bg=CBright,
     font=("times", 17)
 )
@@ -323,7 +323,7 @@ labelFolder = Label(
     width=widthLF,
     height=heightLF,
     # fg="#FFCCCB",
-    fg="#ed7878",
+    fg="#e44949",
     bg=CBright,
     font=("times", 17),
 )
