@@ -2,8 +2,6 @@
 # import kivy
 from tkinter import *
 from tkinter import filedialog
-import cv2 as cv
-import time
 from PIL import ImageTk, Image
 from identification import *
 import os
