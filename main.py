@@ -90,34 +90,31 @@ def refresh():
     train_dataset_condition = False
 
 def SwitchCamera():
-    global Camera_On, capture, TestI, cam
+    global Camera_On, catch, TestI, cam
     refreshPartial()
     if(Camera_On):
         CamButton.configure(text="Camera off", fg=red)
         ChooseFile.configure(state=NORMAL)
         cam.place_forget()
         TestI.place(x=0.50 * width, y=0.500 * height, anchor=CENTER)
-        capture.release()
+        catch.release()
         Camera_On=False
     else:
         CamButton.configure(text="Camera on", fg='green')
         ChooseFile.configure(state=DISABLED)
         TestI.place_forget()
         cam.place(x=0.50 * width, y=0.500 * height, anchor=CENTER, width=widthPic, height=heightPic, bordermode="ignore")
-        capture = cv.VideoCapture(0) 
-        showFrame()
+        catch = cv.VideoCapture(0) 
+        displayCam()
         Camera_On=True
 
-def showFrame():
-   # Change the latest capture to image
-   cvImg= cv.cvtColor(capture.read()[1],cv.COLOR_BGR2RGB)
-   img = Image.fromarray(cvImg)
-   # Convert image to PhotoImage
-   imgTK = ImageTk.PhotoImage(image = img)
-   cam.imgTK = imgTK
-   cam.configure(image=imgTK)
-   # Repeat after an interval to capture continiously
-   cam.after(20, showFrame)
+def displayCam():
+    # menampilkan kamera 
+   cvImg= cv.cvtColor(catch.read()[1], cv.COLOR_BGR2RGBA) 
+   imageFromTK = ImageTk.PhotoImage(image = (Image.fromarray(cvImg)))
+   cam.configure(image=imageFromTK)
+   cam.imageFromTK = imageFromTK
+   cam.after(15, displayCam)
 
 def train_dataset():
     global folderName, train_dataset_condition, dataset_img, average_face, normal, covariance, eig_vec, eig_val, eig_vec_img
@@ -228,7 +225,7 @@ def Execution():
         if (os.path.isdir(folderName)):
             print("\nMenjalankan program FaceID dengan kamera")
             print("...................")
-            result, imgCam = capture.read()
+            result, imgCam = catch.read()
             # imgCam = cv.resize(imgCam, (256,256)) 
             print("Dataset      : " + folderName)
             # print(imgCam)
@@ -241,7 +238,7 @@ def Execution():
             # cv.imwrite("nig.png", fileName)
             # cam.place(x=0.50 * width, y=0.500 * height, anchor=CENTER, width=widthPic, height=heightPic, bordermode="ignore")
             
-            # capture = cv.VideoCapture(0) 
+            # catch = cv.VideoCapture(0) 
             
             test_img = preprocessPhoto(fileName)
             # timeExecution.configure(text=("{:0.2f}".format(time.time() - start_time)))
@@ -295,7 +292,7 @@ def Execution():
 fid.title("FaceID")
 
 cam = Label(fid, borderwidth=0, width=widthPic, height=heightPic,  anchor=CENTER, bg='black')
-# capture = cv.VideoCapture(0)
+# catch = cv.VideoCapture(0)
 
 fidLabel1 = Label(
     fid,
@@ -399,9 +396,7 @@ CamButton = Button(
 
 # Shoving it onto the screen
 # fidLabel1.grid(row=0, column=10)
-fidLabel1.place(
-    x=0.5 * width, y=0.045 * height, anchor=CENTER
-)  # bisa pakai rely or relx
+fidLabel1.place(x=0.5 * width, y=0.045 * height, anchor=CENTER)  # bisa pakai rely or relx
 # fidLabel1.pack(side=TOP)
 fidLabel2.place(x=0.50 * width, y=0.106 * height, anchor=CENTER)
 # fidLabel2.grid(row=15, column=)
@@ -421,7 +416,7 @@ TestI.place(x=0.5 * width, y=0.500 * height, anchor=CENTER)
 ClosestResult.place(x=0.8 * width, y=0.200 * height, anchor=CENTER)
 TestR.place(x=0.8 * width, y=0.500 * height, anchor=CENTER)
 # cam.place(x=0.50 * width, y=0.500 * height, anchor=CENTER)
-# showFrame()
+# displayCam()
 
 timeEx.place(x=0.45 * width, y=0.800 * height, anchor=CENTER)
 timeExecution.place(x=0.520 * width, y=0.800 * height, anchor=CENTER)
